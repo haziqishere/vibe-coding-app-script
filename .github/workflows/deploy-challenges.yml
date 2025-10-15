@@ -155,14 +155,25 @@ jobs:
             exit 1
           fi
 
-          # Check if it has the newer tokens.default structure and flatten it for older clasp versions
+          # Check if it has the newer tokens.default structure and flatten it
           if jq -e '.tokens.default' ~/.clasprc.json > /dev/null 2>&1; then
             echo "📝 Converting newer token format to legacy format"
-            jq '.tokens.default' ~/.clasprc.json > ~/.clasprc.json.tmp
-            mv ~/.clasprc.json.tmp ~/.clasprc.json
+            # Extract tokens.default and remove id_token field (not needed by clasp)
+            jq '.tokens.default | {
+              access_token: .access_token,
+              refresh_token: .refresh_token,
+              scope: "https://www.googleapis.com/auth/script.projects https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/service.management https://www.googleapis.com/auth/logging.read https://www.googleapis.com/auth/cloud-platform",
+              token_type: .token_type,
+              expiry_date: .expiry_date
+            }' ~/.clasprc.json > ~/.clasprc.json.tmp
+
+            # Wrap in token object for older clasp format
+            jq '{token: .}' ~/.clasprc.json.tmp > ~/.clasprc.json
+            rm ~/.clasprc.json.tmp
           fi
 
           echo "✅ clasp credentials configured"
+          echo "🔍 Token structure: $(jq 'keys' ~/.clasprc.json)"
         env:
           CLASP_TOKEN: ${{ secrets.CLASP_TOKEN }}
       
