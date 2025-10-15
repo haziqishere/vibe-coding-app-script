@@ -167,12 +167,15 @@ jobs:
           fi
           
           # Check if scriptId is set
-          SCRIPT_ID=$(cat .clasp.json | grep -oP '(?<="scriptId":")[^"]+' || echo "")
-          if [ -z "$SCRIPT_ID" ]; then
+          SCRIPT_ID=$(grep -o '"scriptId"[[:space:]]*:[[:space:]]*"[^"]*"' .clasp.json | sed 's/.*"\([^"]*\)"$/\1/' || echo "")
+          if [ -z "$SCRIPT_ID" ] || [ "$SCRIPT_ID" = "scriptId" ]; then
             echo "❌ scriptId not set in .clasp.json for Challenge ${{ matrix.challenge }}"
             echo "Please run 'clasp create' locally first"
+            cat .clasp.json
             exit 1
           fi
+
+          echo "✅ Found Script ID: $SCRIPT_ID"
           
           # Push code to Apps Script
           clasp push -f
