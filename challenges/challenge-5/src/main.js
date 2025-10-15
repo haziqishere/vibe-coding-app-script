@@ -3,13 +3,9 @@
  */
 
 function doGet(e) {
-  try {
-    return HtmlService.createHtmlOutputFromFile('index')
-      .setTitle('Challenge 5 - Hello World')
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-  } catch (error) {
-    return HtmlService.createHtmlOutput('<h1>Error: ' + error.message + '</h1>');
-  }
+  return HtmlService.createHtmlOutputFromFile('index')
+    .setTitle('Challenge 5 - Hello World')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1.0');
 }
 
 function getGreeting() {
