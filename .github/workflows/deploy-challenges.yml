@@ -2,7 +2,7 @@ name: Deploy Changed Challenges
 
 on:
   push:
-    branches: [master]
+    branches: [main]
     paths:
       - 'challenges/**'
       - 'shared/**'
