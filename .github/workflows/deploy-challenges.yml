@@ -137,7 +137,10 @@ jobs:
       
       - name: Configure clasp credentials
         run: |
+          # Create clasp config directory
           mkdir -p ~/.config/@google
+
+          # Write the token file
           echo "$CLASP_TOKEN" > ~/.clasprc.json
 
           # Debug: Check if token was written correctly (without exposing actual token)
@@ -150,6 +153,13 @@ jobs:
           if ! jq empty ~/.clasprc.json 2>/dev/null; then
             echo "❌ .clasprc.json is not valid JSON"
             exit 1
+          fi
+
+          # Check if it has the newer tokens.default structure and flatten it for older clasp versions
+          if jq -e '.tokens.default' ~/.clasprc.json > /dev/null 2>&1; then
+            echo "📝 Converting newer token format to legacy format"
+            jq '.tokens.default' ~/.clasprc.json > ~/.clasprc.json.tmp
+            mv ~/.clasprc.json.tmp ~/.clasprc.json
           fi
 
           echo "✅ clasp credentials configured"
