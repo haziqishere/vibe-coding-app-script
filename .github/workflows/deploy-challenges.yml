@@ -115,4 +115,122 @@ jobs:
           echo "✅ Challenge ${{ matrix.challenge }} syntax valid"
 
   deploy:
-    need
+    needs: [detect-changes, validate]
+    if: needs.detect-changes.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        challenge: ${{ fromJson(needs.detect-changes.outputs.challenges) }}
+      fail-fast: false  # Continue deploying other challenges even if one fails
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install clasp
+        run: npm install -g @google/clasp
+      
+      - name: Configure clasp credentials
+        run: |
+          echo "$CLASP_TOKEN" > ~/.clasprc.json
+        env:
+          CLASP_TOKEN: ${{ secrets.CLASP_TOKEN }}
+      
+      - name: Prepare shared utilities
+        run: |
+          echo "📦 Copying shared utilities to Challenge ${{ matrix.challenge }}..."
+          
+          # Create temp directory for shared code
+          mkdir -p challenges/challenge-${{ matrix.challenge }}/src/shared
+          
+          # Copy shared utilities
+          if [ -d "shared/utils" ]; then
+            cp -r shared/utils/* challenges/challenge-${{ matrix.challenge }}/src/shared/ 2>/dev/null || true
+          fi
+          
+          echo "✅ Shared utilities copied"
+      
+      - name: Deploy Challenge ${{ matrix.challenge }}
+        working-directory: challenges/challenge-${{ matrix.challenge }}
+        run: |
+          echo "🚀 Deploying Challenge ${{ matrix.challenge }}..."
+          
+          # Verify .clasp.json exists
+          if [ ! -f ".clasp.json" ]; then
+            echo "❌ .clasp.json not found for Challenge ${{ matrix.challenge }}"
+            exit 1
+          fi
+          
+          # Check if scriptId is set
+          SCRIPT_ID=$(cat .clasp.json | grep -oP '(?<="scriptId":")[^"]+' || echo "")
+          if [ -z "$SCRIPT_ID" ]; then
+            echo "❌ scriptId not set in .clasp.json for Challenge ${{ matrix.challenge }}"
+            echo "Please run 'clasp create' locally first"
+            exit 1
+          fi
+          
+          # Push code to Apps Script
+          clasp push -f
+          
+          # Create new deployment
+          DEPLOY_OUTPUT=$(clasp deploy --description "Challenge ${{ matrix.challenge }} - Auto deploy ${{ github.sha }}")
+          echo "$DEPLOY_OUTPUT"
+          
+          # Extract deployment ID
+          DEPLOYMENT_ID=$(echo "$DEPLOY_OUTPUT" | grep -oP '(?<=- )[^ ]+' | head -1)
+          
+          if [ -n "$DEPLOYMENT_ID" ]; then
+            echo "✅ Challenge ${{ matrix.challenge }} deployed successfully"
+            echo "📝 Deployment ID: $DEPLOYMENT_ID"
+          else
+            echo "⚠️ Deployment may have succeeded but couldn't extract ID"
+          fi
+      
+      - name: Create deployment summary
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "### ✅ Challenge ${{ matrix.challenge }} - Deployed Successfully" >> $GITHUB_STEP_SUMMARY
+            echo "- Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- Branch: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ Challenge ${{ matrix.challenge }} - Deployment Failed" >> $GITHUB_STEP_SUMMARY
+            echo "Check the logs above for details" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  notify:
+    needs: [detect-changes, deploy]
+    if: always() && needs.detect-changes.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Create final summary
+        run: |
+          echo "## 🎯 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployed Challenges**: ${{ needs.detect-changes.outputs.challenges }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status**: ${{ needs.deploy.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "View full details in the workflow run above ⬆️" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Comment on commit
+        if: github.event_name == 'push'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const challenges = ${{ needs.detect-changes.outputs.challenges }};
+            const status = '${{ needs.deploy.result }}';
+            const emoji = status === 'success' ? '✅' : '❌';
+            
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: `${emoji} Deployed challenges: ${challenges.join(', ')}\nStatus: ${status}`
+            })
