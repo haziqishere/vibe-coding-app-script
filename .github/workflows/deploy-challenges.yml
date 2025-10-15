@@ -1,0 +1,118 @@
+name: Deploy Changed Challenges
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'challenges/**'
+      - 'shared/**'
+  workflow_dispatch:
+    inputs:
+      challenges:
+        description: 'Challenges to deploy (comma-separated: 1,2,3 or "all")'
+        required: true
+        default: 'all'
+        type: string
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      challenges: ${{ steps.changes.outputs.challenges }}
+      has_changes: ${{ steps.changes.outputs.has_changes }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Get full history for better diff detection
+      
+      - name: Detect changed challenges
+        id: changes
+        run: |
+          # Manual trigger with specific challenges
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            INPUT="${{ github.event.inputs.challenges }}"
+            
+            if [ "$INPUT" = "all" ]; then
+              CHALLENGES="[1,2,3,4,5]"
+            else
+              # Convert "1,2,3" to [1,2,3]
+              CHALLENGES=$(echo "$INPUT" | jq -R 'split(",") | map(tonumber)')
+            fi
+            
+            echo "challenges=$CHALLENGES" >> $GITHUB_OUTPUT
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "📋 Manual deployment requested for: $INPUT"
+            exit 0
+          fi
+          
+          # Auto-detect changes from push
+          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            # First push to branch
+            CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }})
+          else
+            # Normal push
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          fi
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          
+          # Extract challenge numbers from changed paths
+          CHANGED_CHALLENGES=$(echo "$CHANGED_FILES" | \
+            grep -oP 'challenges/challenge-\K[0-9]+' | \
+            sort -u | \
+            jq -R . | jq -s . | jq -c .)
+          
+          # Check if shared code changed
+          SHARED_CHANGED=$(echo "$CHANGED_FILES" | grep -c "^shared/" || true)
+          
+          if [ "$SHARED_CHANGED" -gt 0 ]; then
+            echo "🔄 Shared code changed - deploying all challenges"
+            CHANGED_CHALLENGES="[1,2,3,4,5]"
+          fi
+          
+          # Check if we have any challenges to deploy
+          if [ "$CHANGED_CHALLENGES" = "[]" ] || [ -z "$CHANGED_CHALLENGES" ]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "⏭️ No challenge changes detected"
+          else
+            echo "challenges=$CHANGED_CHALLENGES" >> $GITHUB_OUTPUT
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "✅ Deploying challenges: $CHANGED_CHALLENGES"
+          fi
+
+  validate:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        challenge: ${{ fromJson(needs.detect-changes.outputs.challenges) }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Validate JavaScript syntax
+        run: |
+          echo "🔍 Validating Challenge ${{ matrix.challenge }}..."
+          
+          if [ ! -d "challenges/challenge-${{ matrix.challenge }}" ]; then
+            echo "❌ Challenge ${{ matrix.challenge }} directory not found"
+            exit 1
+          fi
+          
+          # Check all JS files
+          find challenges/challenge-${{ matrix.challenge }}/src -name "*.js" -exec node --check {} \;
+          
+          echo "✅ Challenge ${{ matrix.challenge }} syntax valid"
+
+  deploy:
+    need
