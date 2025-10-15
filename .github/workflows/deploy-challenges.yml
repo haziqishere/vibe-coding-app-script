@@ -137,7 +137,22 @@ jobs:
       
       - name: Configure clasp credentials
         run: |
+          mkdir -p ~/.config/@google
           echo "$CLASP_TOKEN" > ~/.clasprc.json
+
+          # Debug: Check if token was written correctly (without exposing actual token)
+          if [ ! -f ~/.clasprc.json ]; then
+            echo "❌ Failed to create .clasprc.json"
+            exit 1
+          fi
+
+          # Verify JSON structure
+          if ! jq empty ~/.clasprc.json 2>/dev/null; then
+            echo "❌ .clasprc.json is not valid JSON"
+            exit 1
+          fi
+
+          echo "✅ clasp credentials configured"
         env:
           CLASP_TOKEN: ${{ secrets.CLASP_TOKEN }}
       
