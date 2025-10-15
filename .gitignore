@@ -2,9 +2,6 @@
 node_modules/
 package-lock.json
 
-# clasp
-.clasprc.json
-**/appsscript.json
 
 # Shared code copies (generated during deployment)
 **/src/shared/
