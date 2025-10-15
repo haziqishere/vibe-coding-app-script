@@ -155,6 +155,9 @@ jobs:
             exit 1
           fi
 
+          # Debug: Show the top-level keys (without exposing values)
+          echo "🔍 Token top-level keys: $(jq -r 'keys | join(", ")' ~/.clasprc.json)"
+
           # Check if it has the newer tokens.default structure and flatten it
           if jq -e '.tokens.default' ~/.clasprc.json > /dev/null 2>&1; then
             echo "📝 Converting newer token format to legacy format"
