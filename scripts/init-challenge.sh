@@ -31,34 +31,39 @@ mkdir -p "$CHALLENGE_DIR/src"
 cd "$CHALLENGE_DIR"
 
 # Check if .clasp.json already exists with a valid Script ID
+SCRIPT_ID=""
 if [ -f ".clasp.json" ]; then
     EXISTING_ID=$(cat .clasp.json | grep -oP '(?<="scriptId":")[^"]+' || echo "")
     if [ -n "$EXISTING_ID" ] && [ "$EXISTING_ID" != "" ]; then
         echo -e "${YELLOW}⚠️  Challenge $CHALLENGE already has a Script ID: $EXISTING_ID${NC}"
-        echo -e "${YELLOW}Skipping clasp create. To recreate, delete .clasp.json first.${NC}"
+        echo -e "${YELLOW}Skipping clasp create. Fixing .clasp.json format...${NC}"
         SCRIPT_ID=$EXISTING_ID
-    else
-        # Empty scriptId, need to create
-        rm -f .clasp.json
-        echo -e "${YELLOW}Creating Apps Script project...${NC}"
-        clasp create --title "$TITLE" --type standalone
-        SCRIPT_ID=$(cat .clasp.json | grep -oP '(?<="scriptId":")[^"]+')
     fi
-else
-    # No .clasp.json, create new project
+fi
+
+# If no valid Script ID found, create new project
+if [ -z "$SCRIPT_ID" ]; then
+    # Remove old .clasp.json if it exists
+    rm -f .clasp.json
+    
     echo -e "${YELLOW}Creating Apps Script project...${NC}"
     clasp create --title "$TITLE" --type standalone
+    
+    # Extract Script ID from the created .clasp.json
     SCRIPT_ID=$(cat .clasp.json | grep -oP '(?<="scriptId":")[^"]+')
+    
+    # Verify we got a Script ID
+    if [ -z "$SCRIPT_ID" ]; then
+        echo -e "${RED}❌ Failed to get Script ID${NC}"
+        echo -e "${RED}Please check if clasp is logged in: clasp login${NC}"
+        exit 1
+    fi
+    
+    echo -e "${GREEN}✅ Created new project with Script ID: $SCRIPT_ID${NC}"
 fi
 
-# Verify we got a Script ID
-if [ -z "$SCRIPT_ID" ]; then
-    echo -e "${RED}❌ Failed to get Script ID${NC}"
-    echo -e "${RED}Please check if clasp is logged in: clasp login${NC}"
-    exit 1
-fi
-
-# Update .clasp.json to use src directory
+# Always rewrite .clasp.json to ensure correct format
+# This fixes any issues with rootDir or extra fields
 cat > .clasp.json << EOF
 {
   "scriptId": "$SCRIPT_ID",
@@ -66,7 +71,7 @@ cat > .clasp.json << EOF
 }
 EOF
 
-echo -e "${GREEN}✅ Script ID: $SCRIPT_ID${NC}"
+echo -e "${GREEN}✅ .clasp.json configured with rootDir: ./src${NC}"
 
 # Create initial main.js if it doesn't exist
 if [ ! -f "src/main.js" ]; then
@@ -95,6 +100,8 @@ function main() {
 }
 EOF
     echo -e "${GREEN}✅ Created src/main.js${NC}"
+else
+    echo -e "${YELLOW}ℹ️  src/main.js already exists, skipping${NC}"
 fi
 
 # Create appsscript.json if it doesn't exist
@@ -108,6 +115,8 @@ if [ ! -f "appsscript.json" ]; then
 }
 EOF
     echo -e "${GREEN}✅ Created appsscript.json${NC}"
+else
+    echo -e "${YELLOW}ℹ️  appsscript.json already exists, skipping${NC}"
 fi
 
 # Create or update README
@@ -157,6 +166,7 @@ if clasp push -f; then
     echo -e "${GREEN}✅ Initial deployment successful!${NC}"
 else
     echo -e "${RED}⚠️  Deployment test failed, but setup is complete${NC}"
+    echo -e "${YELLOW}Try running 'clasp push' manually from $CHALLENGE_DIR${NC}"
 fi
 
 cd ../..
