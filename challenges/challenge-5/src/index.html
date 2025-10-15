@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .container {
+      text-align: center;
+      background: white;
+      padding: 40px 60px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 2em;
+    }
+
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      font-size: 18px;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      font-weight: bold;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    #message {
+      margin-top: 30px;
+      font-size: 1.5em;
+      color: #667eea;
+      min-height: 50px;
+      font-weight: 500;
+    }
+
+    .emoji {
+      font-size: 3em;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="emoji">🚀</div>
+    <h1>Challenge 5 Demo</h1>
+    <button onclick="showGreeting()">Say Hello!</button>
+    <div id="message"></div>
+  </div>
+
+  <script>
+    function showGreeting() {
+      document.getElementById('message').innerHTML = 'Loading...';
+
+      google.script.run
+        .withSuccessHandler(function(greeting) {
+          document.getElementById('message').innerHTML = greeting;
+        })
+        .withFailureHandler(function(error) {
+          document.getElementById('message').innerHTML = 'Error: ' + error.message;
+        })
+        .getGreeting();
+    }
+  </script>
+</body>
+</html>

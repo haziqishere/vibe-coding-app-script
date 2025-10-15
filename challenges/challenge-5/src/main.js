@@ -1,16 +1,14 @@
 /**
- * Challenge 5 - Hello World Demo
+ * Challenge 5 - Hello World Web App
  */
 
-function onOpen() {
-  const ui = SpreadsheetApp.getUi();
-  ui.createMenu('Challenge 5')
-    .addItem('Say Hello', 'sayHello')
-    .addToUi();
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('index')
+    .setTitle('Challenge 5 - Hello World')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-function sayHello() {
-  const ui = SpreadsheetApp.getUi();
-  ui.alert('Hello World! =K', 'Welcome to Challenge 5!', ui.ButtonSet.OK);
-  Logger.log('Hello World button was clicked!');
+function getGreeting() {
+  Logger.log('getGreeting called');
+  return 'Hello World! 👋 Welcome to Challenge 5!';
 }
