@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Google Sans', 'Roboto', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 600px;
+      width: 100%;
+      padding: 40px;
+      animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      color: #333;
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+
+    .header .emoji {
+      font-size: 3em;
+      margin-bottom: 10px;
+    }
+
+    .spreadsheet-info {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 25px;
+      border-left: 4px solid #667eea;
+    }
+
+    .spreadsheet-info h3 {
+      color: #667eea;
+      margin-bottom: 8px;
+      font-size: 1.1em;
+    }
+
+    .spreadsheet-info p {
+      color: #666;
+      margin: 5px 0;
+      font-size: 0.95em;
+    }
+
+    .form-section {
+      margin-bottom: 25px;
+    }
+
+    .form-section label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 500;
+      font-size: 0.95em;
+    }
+
+    select, input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+
+    select:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    .checkbox-group label {
+      margin: 0;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .multi-language-section {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 15px;
+      display: none;
+    }
+
+    .multi-language-section.active {
+      display: block;
+    }
+
+    .language-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .language-chip {
+      padding: 8px 15px;
+      background: #e8f0fe;
+      border: 2px solid #667eea;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.9em;
+    }
+
+    .language-chip:hover {
+      background: #667eea;
+      color: white;
+    }
+
+    .language-chip.selected {
+      background: #667eea;
+      color: white;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+    }
+
+    button {
+      flex: 1;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #f8f9fa;
+      color: #333;
+      border: 2px solid #e0e0e0;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #e8f0fe;
+      border-color: #667eea;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .results {
+      margin-top: 25px;
+      padding: 20px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .results.active {
+      display: block;
+    }
+
+    .results.success {
+      background: #d4edda;
+      border: 2px solid #28a745;
+    }
+
+    .results.error {
+      background: #f8d7da;
+      border: 2px solid #dc3545;
+    }
+
+    .results h3 {
+      margin-bottom: 15px;
+      font-size: 1.2em;
+    }
+
+    .results.success h3 {
+      color: #155724;
+    }
+
+    .results.error h3 {
+      color: #721c24;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .stat-item {
+      background: white;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.8em;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .stat-label {
+      font-size: 0.85em;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .languages-detected {
+      margin-top: 15px;
+      padding: 12px;
+      background: white;
+      border-radius: 8px;
+    }
+
+    .languages-detected h4 {
+      margin-bottom: 8px;
+      color: #333;
+      font-size: 1em;
+    }
+
+    .language-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .language-item:last-child {
+      border-bottom: none;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 25px;
+      }
+
+      .header h1 {
+        font-size: 1.5em;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .stat-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="emoji">🌐</div>
+      <h1>Smart Translator</h1>
+    </div>
+
+    <div id="spreadsheet-info" class="spreadsheet-info">
+      <h3>Loading spreadsheet info...</h3>
+    </div>
+
+    <div class="form-section">
+      <label for="target-language">Target Language</label>
+      <select id="target-language">
+        <option value="">Select a language...</option>
+      </select>
+    </div>
+
+    <div class="form-section">
+      <div class="checkbox-group">
+        <input type="checkbox" id="active-cell-only">
+        <label for="active-cell-only">Translate active cell only (uncheck for entire selection)</label>
+      </div>
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="multi-language-mode">
+        <label for="multi-language-mode">Translate to multiple languages side-by-side</label>
+      </div>
+    </div>
+
+    <div id="multi-language-section" class="multi-language-section">
+      <label>Select additional languages (click to toggle):</label>
+      <div id="language-chips" class="language-chips"></div>
+    </div>
+
+    <div class="button-group">
+      <button id="translate-btn" class="btn-primary" onclick="handleTranslate()">
+        🌐 Translate Now
+      </button>
+      <button id="undo-btn" class="btn-secondary" onclick="handleUndo()">
+        ↩️ Undo
+      </button>
+    </div>
+
+    <div id="results" class="results"></div>
+  </div>
+
+  <script>
+    let supportedLanguages = [];
+    let selectedAdditionalLanguages = [];
+
+    // Load initial data
+    window.onload = function() {
+      loadSpreadsheetInfo();
+      loadSupportedLanguages();
+    };
+
+    function loadSpreadsheetInfo() {
+      google.script.run
+        .withSuccessHandler(function(info) {
+          const infoDiv = document.getElementById('spreadsheet-info');
+          infoDiv.innerHTML = `
+            <h3>📊 ${info.spreadsheetName}</h3>
+            <p><strong>Sheet:</strong> ${info.sheetName}</p>
+            <p><strong>Selection:</strong> ${info.selectionAddress} (${info.cellCount} cell${info.cellCount > 1 ? 's' : ''})</p>
+          `;
+        })
+        .withFailureHandler(function(error) {
+          showResults('error', 'Error', error.message);
+        })
+        .getSpreadsheetInfo();
+    }
+
+    function loadSupportedLanguages() {
+      google.script.run
+        .withSuccessHandler(function(languages) {
+          supportedLanguages = languages;
+          
+          const select = document.getElementById('target-language');
+          languages.forEach(lang => {
+            const option = document.createElement('option');
+            option.value = lang.code;
+            option.textContent = lang.name;
+            select.appendChild(option);
+          });
+
+          // Populate language chips
+          const chipsContainer = document.getElementById('language-chips');
+          languages.forEach(lang => {
+            const chip = document.createElement('div');
+            chip.className = 'language-chip';
+            chip.textContent = lang.name;
+            chip.dataset.code = lang.code;
+            chip.onclick = function() {
+              toggleLanguageChip(this);
+            };
+            chipsContainer.appendChild(chip);
+          });
+        })
+        .withFailureHandler(function(error) {
+          console.error('Error loading languages:', error);
+        })
+        .getSupportedLanguages();
+    }
+
+    function toggleLanguageChip(chip) {
+      const code = chip.dataset.code;
+      chip.classList.toggle('selected');
+      
+      if (chip.classList.contains('selected')) {
+        if (!selectedAdditionalLanguages.includes(code)) {
+          selectedAdditionalLanguages.push(code);
+        }
+      } else {
+        selectedAdditionalLanguages = selectedAdditionalLanguages.filter(c => c !== code);
+      }
+    }
+
+    document.getElementById('multi-language-mode').addEventListener('change', function(e) {
+      const section = document.getElementById('multi-language-section');
+      const activeCellCheckbox = document.getElementById('active-cell-only');
+      
+      if (e.target.checked) {
+        section.classList.add('active');
+        activeCellCheckbox.checked = false;
+        activeCellCheckbox.disabled = true;
+      } else {
+        section.classList.remove('active');
+        activeCellCheckbox.disabled = false;
+        selectedAdditionalLanguages = [];
+        document.querySelectorAll('.language-chip').forEach(chip => {
+          chip.classList.remove('selected');
+        });
+      }
+    });
+
+    function handleTranslate() {
+      const targetLang = document.getElementById('target-language').value;
+      const activeCellOnly = document.getElementById('active-cell-only').checked;
+      const multiLanguageMode = document.getElementById('multi-language-mode').checked;
+      const translateBtn = document.getElementById('translate-btn');
+
+      if (!targetLang) {
+        showResults('error', 'Error', 'Please select a target language');
+        return;
+      }
+
+      if (multiLanguageMode && selectedAdditionalLanguages.length === 0) {
+        showResults('error', 'Error', 'Please select at least one additional language');
+        return;
+      }
+
+      // Show loading state
+      translateBtn.disabled = true;
+      translateBtn.innerHTML = '<span class="loading"></span> Translating...';
+      hideResults();
+
+      if (multiLanguageMode) {
+        // Add primary language to the list
+        const allLanguages = [targetLang, ...selectedAdditionalLanguages];
+        
+        google.script.run
+          .withSuccessHandler(function(stats) {
+            showTranslationResults(stats);
+            translateBtn.disabled = false;
+            translateBtn.innerHTML = '🌐 Translate Now';
+            loadSpreadsheetInfo(); // Refresh selection info
+          })
+          .withFailureHandler(function(error) {
+            showResults('error', 'Translation Failed', error.message);
+            translateBtn.disabled = false;
+            translateBtn.innerHTML = '🌐 Translate Now';
+          })
+          .performMultiLanguageTranslation(allLanguages);
+      } else {
+        google.script.run
+          .withSuccessHandler(function(stats) {
+            showTranslationResults(stats);
+            translateBtn.disabled = false;
+            translateBtn.innerHTML = '🌐 Translate Now';
+            loadSpreadsheetInfo(); // Refresh selection info
+          })
+          .withFailureHandler(function(error) {
+            showResults('error', 'Translation Failed', error.message);
+            translateBtn.disabled = false;
+            translateBtn.innerHTML = '🌐 Translate Now';
+          })
+          .performTranslation(targetLang, activeCellOnly);
+      }
+    }
+
+    function handleUndo() {
+      const undoBtn = document.getElementById('undo-btn');
+      
+      undoBtn.disabled = true;
+      undoBtn.innerHTML = '<span class="loading"></span>'
+      undoBtn.innerHTML = '<span class="loading"></span> Undoing...';
+      hideResults();
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          showResults('success', 'Undo Successful', 
+            `Restored ${result.cellCount} cell${result.cellCount > 1 ? 's' : ''} in ${result.sheetName} (${result.rangeAddress})`);
+          undoBtn.disabled = false;
+          undoBtn.innerHTML = '↩️ Undo';
+          loadSpreadsheetInfo(); // Refresh selection info
+        })
+        .withFailureHandler(function(error) {
+          showResults('error', 'Undo Failed', error.message);
+          undoBtn.disabled = false;
+          undoBtn.innerHTML = '↩️ Undo';
+        })
+        .performUndo();
+    }
+
+    function showTranslationResults(stats) {
+      let html = `
+        <h3>✅ Translation Complete!</h3>
+        <div class="stat-grid">
+          <div class="stat-item">
+            <div class="stat-value">${stats.translatedCells}</div>
+            <div class="stat-label">Cells Translated</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">${stats.totalCells}</div>
+            <div class="stat-label">Total Cells</div>
+          </div>
+      `;
+
+      if (stats.emptyCells > 0) {
+        html += `
+          <div class="stat-item">
+            <div class="stat-value">${stats.emptyCells}</div>
+            <div class="stat-label">Empty Cells Skipped</div>
+          </div>
+        `;
+      }
+
+      html += `</div>`;
+
+      // Show languages detected
+      if (stats.languagesDetected && Object.keys(stats.languagesDetected).length > 0) {
+        html += `
+          <div class="languages-detected">
+            <h4>🌍 Languages Detected:</h4>
+        `;
+        
+        for (const [lang, count] of Object.entries(stats.languagesDetected)) {
+          html += `
+            <div class="language-item">
+              <span>${lang}</span>
+              <span><strong>${count}</strong> cell${count > 1 ? 's' : ''}</span>
+            </div>
+          `;
+        }
+        
+        html += `</div>`;
+      }
+
+      // Show target languages
+      if (stats.targetLanguages && stats.targetLanguages.length > 1) {
+        html += `
+          <div class="languages-detected">
+            <h4>🎯 Translated To:</h4>
+            <p>${stats.targetLanguages.join(', ')}</p>
+          </div>
+        `;
+      } else if (stats.targetLanguage) {
+        html += `
+          <div class="languages-detected">
+            <h4>🎯 Translated To:</h4>
+            <p>${stats.targetLanguage}</p>
+          </div>
+        `;
+      }
+
+      // Show errors if any
+      if (stats.errors && stats.errors.length > 0) {
+        html += `
+          <div class="languages-detected" style="background: #fff3cd; border: 1px solid #ffc107;">
+            <h4 style="color: #856404;">⚠️ Some cells had errors:</h4>
+        `;
+        
+        stats.errors.slice(0, 5).forEach(error => {
+          html += `<div class="language-item" style="border-bottom: 1px solid #ffc107;"><span style="color: #856404;">${error}</span></div>`;
+        });
+        
+        if (stats.errors.length > 5) {
+          html += `<p style="margin-top: 10px; color: #856404; font-style: italic;">...and ${stats.errors.length - 5} more</p>`;
+        }
+        
+        html += `</div>`;
+      }
+
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.className = 'results success active';
+      resultsDiv.innerHTML = html;
+    }
+
+    function showResults(type, title, message) {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.className = `results ${type} active`;
+      resultsDiv.innerHTML = `
+        <h3>${title}</h3>
+        <p>${message}</p>
+      `;
+    }
+
+    function hideResults() {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.classList.remove('active');
+    }
+  </script>
+</body>
+</html>
