@@ -15,7 +15,7 @@ function onOpen() {
     .addToUi();
 }
 
-/**
+/*
  * Shows the translator sidebar
  */
 function showTranslatorSidebar() {
