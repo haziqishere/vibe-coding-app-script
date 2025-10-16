@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Decider</title>
+    <!-- Google Fonts for a modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Confetti library for celebration -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        /* --- Custom Styles & Variables --- */
+        :root {
+            --emerald-green: #075E54; --light-green: #25D366; --cream-white: #ECE5DD;
+            --dark-gray: #333; --light-gray: #f1f1f1; --white: #ffffff;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.1); --border-radius: 12px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', sans-serif; background-color: var(--cream-white); color: var(--dark-gray);
+            display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px;
+        }
+        .app-container {
+            width: 100%; max-width: 450px; background-color: var(--white); border-radius: var(--border-radius);
+            box-shadow: var(--shadow); overflow: hidden; transition: all 0.5s ease-in-out;
+        }
+        .screen { padding: 30px 35px; display: none; }
+        .screen.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        h1, h2 { text-align: center; color: var(--emerald-green); }
+        h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        h2 { font-size: 1.5rem; margin-bottom: 20px; font-weight: 600; }
+        .welcome-text { text-align: center; margin-bottom: 30px; font-size: 1.1rem; color: #555; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--emerald-green); }
+        input[type="text"] {
+            width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid #ccc;
+            font-family: 'Poppins', sans-serif; font-size: 1rem; transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input[type="text"]:focus { outline: none; border-color: var(--light-green); box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.2); }
+        .btn {
+            display: block; width: 100%; padding: 15px; border: none; border-radius: 8px;
+            background: linear-gradient(45deg, var(--light-green), var(--emerald-green)); color: var(--white);
+            font-size: 1.2rem; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 211, 102, 0.3); }
+        .btn:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        .add-btn { width: auto; padding: 12px 20px; font-size: 1rem; margin-left: 10px; }
+        .input-flex-container { display: flex; align-items: center; }
+        #options-list { list-style: none; margin-top: 20px; max-height: 150px; overflow-y: auto; padding: 10px; background: var(--light-gray); border-radius: 8px; }
+        #options-list li {
+            display: flex; justify-content: space-between; align-items: center; padding: 8px 10px;
+            background: var(--white); border-radius: 6px; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .remove-btn { background: none; border: none; color: #ff5c5c; cursor: pointer; font-size: 1.2rem; font-weight: bold; }
+        
+        /* --- SVG WHEEL STYLES --- */
+        .wheel-svg {
+            width: 250px; height: 250px; transition: transform 4s cubic-bezier(0.25, 1, 0.5, 1);
+            border-radius: 50%; box-shadow: var(--shadow); border: 8px solid var(--emerald-green);
+        }
+        .wheel-svg text {
+            font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 16px;
+            fill: var(--white); text-anchor: middle;
+        }
+        .wheel-pointer {
+            position: absolute; top: 50%; right: -10px; transform: translateY(-50%); width: 0; height: 0;
+            border-top: 20px solid transparent; border-bottom: 20px solid transparent; border-left: 30px solid var(--light-green); z-index: 10;
+        }
+        #spinnerScreen h2 { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        
+        /* --- Result Screen --- */
+        #resultScreen { text-align: center; }
+        #resultText {
+            background-color: var(--light-gray); border-radius: var(--border-radius); padding: 25px; margin-top: 20px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+        }
+        #resultText .chosen-option { font-size: 1.8rem; font-weight: 700; color: var(--emerald-green); }
+        #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; pointer-events: none; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Screen 1: Welcome -->
+        <div id="welcomeScreen" class="screen active">
+            <h1>The Decider 🤔</h1>
+            <p class="welcome-text">Can't decide what to eat? Let's settle it once and for all.</p>
+            <div class="input-group">
+                <label for="usernameInput">First, what's your name?</label>
+                <input type="text" id="usernameInput" placeholder="e.g., Alex">
+            </div>
+            <button id="startBtn" class="btn">Let's Go!</button>
+        </div>
+
+        <!-- Screen 2: Input Options -->
+        <div id="inputScreen" class="screen">
+            <h2 id="input-greeting"></h2>
+            <div class="input-group">
+                <label for="optionInput">Enter an option (e.g., "Pizza at Domino's")</label>
+                <div class="input-flex-container">
+                    <input type="text" id="optionInput" placeholder="Food at Restaurant">
+                    <button id="addOptionBtn" class="btn add-btn">Add</button>
+                </div>
+            </div>
+            <ul id="options-list"></ul>
+            <button id="decideBtn" class="btn" disabled>Decide For Me!</button>
+        </div>
+        
+        <!-- Screen 3: Spinner -->
+        <div id="spinnerScreen" class="screen">
+            <h2>Spinning the wheel of fate...</h2>
+            <div style="position: relative; display: flex; justify-content: center; align-items: center; margin-top: 20px;">
+                <div id="wheel-container" style="width: 266px; height: 266px; display: flex; justify-content: center; align-items: center;"></div>
+                <div class="wheel-pointer"></div>
+            </div>
+        </div>
+
+        <!-- Screen 4: Result -->
+        <div id="resultScreen" class="screen">
+            <h2>The decision is in!</h2>
+            <div id="resultText"></div>
+            <button id="startOverBtn" class="btn" style="margin-top: 30px;">Decide Again</button>
+        </div>
+    </div>
+
+    <canvas id="confetti-canvas"></canvas>
+    
+    <!-- Link to the external JavaScript file -->
+    <script src="main.js" defer></script>
+</body>
+</html>
+
