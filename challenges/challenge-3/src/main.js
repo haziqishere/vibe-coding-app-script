@@ -4,12 +4,63 @@
  */
 
 /**
- * Creates the web app UI
+ * Creates custom menu when spreadsheet opens
+ */
+function onOpen() {
+  const ui = SpreadsheetApp.getUi();
+  ui.createMenu('🌐 Translator')
+    .addItem('Open Translator', 'showTranslatorSidebar')
+    .addSeparator()
+    .addItem('Translate Selection', 'quickTranslate')
+    .addToUi();
+}
+
+/**
+ * Shows the translator sidebar
+ */
+function showTranslatorSidebar() {
+  const html = HtmlService.createHtmlOutputFromFile('index')
+    .setTitle('Smart Translator')
+    .setWidth(400);
+  SpreadsheetApp.getUi().showSidebar(html);
+}
+
+/**
+ * Quick translate function (prompts for language)
+ */
+function quickTranslate() {
+  const ui = SpreadsheetApp.getUi();
+  
+  const response = ui.prompt(
+    'Quick Translate',
+    'Enter target language code (en, ms, zh-CN, ja, etc.):',
+    ui.ButtonSet.OK_CANCEL
+  );
+  
+  if (response.getSelectedButton() === ui.Button.OK) {
+    const targetLang = response.getResponseText().trim();
+    
+    try {
+      const result = performTranslation(targetLang, false);
+      ui.alert(
+        'Translation Complete!',
+        `Translated ${result.translatedCells} out of ${result.totalCells} cells.`,
+        ui.ButtonSet.OK
+      );
+    } catch (error) {
+      ui.alert('Error', error.message, ui.ButtonSet.OK);
+    }
+  }
+}
+
+/**
+ * Creates the web app UI (for standalone deployment)
  */
 function doGet(e) {
   return HtmlService.createHtmlOutputFromFile('index')
     .setTitle('Smart Spreadsheet Translator')
-    .setFaviconUrl('https://www.gstatic.com/images/branding/product/1x/translate_24dp.png');
+    .setFaviconUrl('https://www.gstatic.com/images/branding/product/1x/translate_24dp.png')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1.0');
 }
 
 /**
@@ -19,6 +70,11 @@ function doGet(e) {
 function getSpreadsheetInfo() {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    if (!ss) {
+      throw new Error('No spreadsheet is active');
+    }
+    
     const sheet = ss.getActiveSheet();
     const selection = sheet.getActiveRange();
     
@@ -31,7 +87,7 @@ function getSpreadsheetInfo() {
     };
   } catch (error) {
     Logger.log('Error in getSpreadsheetInfo: ' + error.message);
-    throw new Error('No active spreadsheet found. Please open this from a Google Sheet.');
+    throw new Error('Unable to access spreadsheet. Please open this tool from within a Google Sheet by going to Extensions > Apps Script, then run onOpen() or use the custom menu.');
   }
 }
 
@@ -42,34 +98,21 @@ function getSpreadsheetInfo() {
  */
 function detectLanguage(text) {
   try {
-    // Remove empty strings and whitespace
     const cleanText = text.trim();
     if (!cleanText) {
       return 'unknown';
     }
     
-    // Use Google's Language service to detect
-    const detectedLang = LanguageApp.translate('', 'en', 'auto');
+    // Detect by character patterns (most reliable method)
+    if (/[\u4e00-\u9fa5]/.test(cleanText)) return 'zh-CN'; // Chinese
+    if (/[\u0600-\u06FF]/.test(cleanText)) return 'ar';    // Arabic
+    if (/[\u0400-\u04FF]/.test(cleanText)) return 'ru';    // Russian
+    if (/[\u3040-\u309F\u30A0-\u30FF]/.test(cleanText)) return 'ja'; // Japanese
+    if (/[\uAC00-\uD7AF]/.test(cleanText)) return 'ko';    // Korean
+    if (/[\u0E00-\u0E7F]/.test(cleanText)) return 'th';    // Thai
     
-    // More reliable: use a test translation to detect language
-    // If translating to same language, result will be identical
-    const testLangs = ['en', 'ms', 'zh-CN', 'ja', 'ko', 'es', 'fr', 'de'];
-    
-    for (let lang of testLangs) {
-      const translated = LanguageApp.translate(cleanText, '', lang);
-      if (translated === cleanText && cleanText.length > 2) {
-        return lang;
-      }
-    }
-    
-    // Fallback: detect by character patterns
-    if (/[\u4e00-\u9fa5]/.test(cleanText)) return 'zh-CN';
-    if (/[\u0600-\u06FF]/.test(cleanText)) return 'ar';
-    if (/[\u0400-\u04FF]/.test(cleanText)) return 'ru';
-    if (/[\u3040-\u309F\u30A0-\u30FF]/.test(cleanText)) return 'ja';
-    if (/[\uAC00-\uD7AF]/.test(cleanText)) return 'ko';
-    
-    return 'auto'; // Let Google decide
+    // For Latin-based languages, let Google auto-detect
+    return 'auto';
   } catch (error) {
     Logger.log('Error detecting language: ' + error.message);
     return 'auto';
@@ -354,6 +397,7 @@ function getLanguageName(code) {
     'th': 'Thai',
     'vi': 'Vietnamese',
     'id': 'Indonesian',
+    'tl': 'Tagalog',
     'auto': 'Auto-detected',
     'unknown': 'Unknown'
   };
@@ -383,6 +427,7 @@ function getSupportedLanguages() {
     { code: 'hi', name: 'Hindi' },
     { code: 'th', name: 'Thai' },
     { code: 'vi', name: 'Vietnamese' },
-    { code: 'id', name: 'Indonesian' }
+    { code: 'id', name: 'Indonesian' },
+    { code: 'tl', name: 'Tagalog' }
   ];
 }
