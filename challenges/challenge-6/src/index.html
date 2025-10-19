@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Project Hub</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    /* ===== CSS VARIABLES (Apple Design System) ===== */
+    :root {
+      --primary: #007AFF;
+      --primary-dark: #0051D5;
+      --success: #34C759;
+      --warning: #FF9500;
+      --danger: #FF3B30;
+      --gray-1: #F2F2F7;
+      --gray-2: #E5E5EA;
+      --gray-3: #D1D1D6;
+      --gray-4: #8E8E93;
+      --gray-5: #636366;
+      --gray-6: #48484A;
+      --text-primary: #000000;
+      --text-secondary: #3C3C43;
+      --text-tertiary: #8E8E93;
+      --background: #FFFFFF;
+      --card-bg: #FFFFFF;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+      --radius: 12px;
+      --radius-lg: 20px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --gray-1: #1C1C1E;
+        --gray-2: #2C2C2E;
+        --gray-3: #3A3A3C;
+        --gray-4: #8E8E93;
+        --text-primary: #FFFFFF;
+        --text-secondary: #EBEBF5;
+        --text-tertiary: #8E8E93;
+        --background: #000000;
+        --card-bg: #1C1C1E;
+      }
+    }
+    
+    /* ===== RESET & BASE STYLES ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      background: var(--gray-1);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
+    @keyframes shimmer {
+      0% {
+        background-position: -1000px 0;
+      }
+      100% {
+        background-position: 1000px 0;
+      }
+    }
+    
+    /* ===== LAYOUT ===== */
+    .app-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    
+    /* ===== HEADER ===== */
+    .header {
+      margin-bottom: 40px;
+      animation: fadeIn 0.6s ease;
+    }
+    
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .header-title h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .header-subtitle {
+      color: var(--text-tertiary);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+    
+    /* ===== BUTTONS ===== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+    }
+    
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+    
+    .btn-secondary {
+      background: var(--gray-2);
+      color: var(--text-primary);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--gray-3);
+    }
+    
+    .btn-ghost {
+      background: transparent;
+      color: var(--primary);
+    }
+    
+    .btn-ghost:hover {
+      background: var(--gray-1);
+    }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    
+    .btn-icon {
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border-radius: 50%;
+    }
+    
+    /* ===== CARDS ===== */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+    
+    .card:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    /* ===== FORMS ===== */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+    
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-family: inherit;
+      border: 2px solid var(--gray-2);
+      border-radius: var(--radius);
+      background: var(--background);
+      color: var(--text-primary);
+      transition: var(--transition);
+    }
+    
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+    }
+    
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+    }
+    
+    /* ===== LOADING STATES ===== */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      gap: 20px;
+    }
+    
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid var(--gray-2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    .skeleton {
+      background: linear-gradient(
+        90deg,
+        var(--gray-1) 0%,
+        var(--gray-2) 50%,
+        var(--gray-1) 100%
+      );
+      background-size: 1000px 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: var(--radius);
+    }
+    
+    /* ===== PROJECTS GRID ===== */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+      animation: fadeIn 0.6s ease;
+    }
+    
+    .project-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: var(--transition);
+      border: 2px solid transparent;
+    }
+    
+    .project-card:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-4px);
+      border-color: var(--primary);
+    }
+    
+    .project-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    
+    .project-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    
+    .project-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 12px 0 8px 0;
+      color: var(--text-primary);
+    }
+    
+    .project-description {
+      font-size: 14px;
+      color: var(--text-tertiary);
+      line-height: 1.5;
+      margin-bottom: 16px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .project-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 16px;
+      border-top: 1px solid var(--gray-2);
+    }
+    
+    .project-date {
+      font-size: 13px;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    /* ===== TASKS ===== */
+    .tasks-container {
+      display: grid;
+      gap: 16px;
+    }
+    
+    .task-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 16px;
+      border-left: 4px solid var(--gray-3);
+      transition: var(--transition);
+      cursor: pointer;
+    }
+    
+    .task-card:hover {
+      box-shadow: var(--shadow);
+      transform: translateX(4px);
+    }
+    
+    .task-card.priority-high {
+      border-left-color: var(--danger);
+    }
+    
+    .task-card.priority-medium {
+      border-left-color: var(--warning);
+    }
+    
+    .task-card.priority-low {
+      border-left-color: var(--success);
+    }
+    
+    .task-card.status-done {
+      opacity: 0.6;
+    }
+    
+    .task-card.status-done .task-title {
+      text-decoration: line-through;
+    }
+    
+    .task-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    
+    .task-checkbox {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--gray-3);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .task-checkbox:hover {
+      border-color: var(--primary);
+    }
+    
+    .task-checkbox.checked {
+      background: var(--success);
+      border-color: var(--success);
+    }
+    
+    .task-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex: 1;
+    }
+    
+    .task-description {
+      font-size: 14px;
+      color: var(--text-tertiary);
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    
+    .task-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .task-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-tertiary);
+    }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .badge-status {
+      background: var(--gray-1);
+      color: var(--text-secondary);
+    }
+    
+    .badge-status.todo {
+      background: #E3F2FD;
+      color: #1976D2;
+    }
+    
+    .badge-status.in-progress {
+      background: #FFF3E0;
+      color: #F57C00;
+    }
+    
+    .badge-status.done {
+      background: #E8F5E9;
+      color: #388E3C;
+    }
+    
+    .badge-priority {
+      background: var(--gray-2);
+      color: var(--text-primary);
+    }
+    
+    .badge-priority.high {
+      background: #FFEBEE;
+      color: #C62828;
+    }
+    
+    .badge-priority.medium {
+      background: #FFF3E0;
+      color: #EF6C00;
+    }
+    
+    .badge-priority.low {
+      background: #E8F5E9;
+      color: #2E7D32;
+    }
+    
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 24px;
+      animation: fadeIn 0.2s ease;
+    }
+    
+    .modal {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .modal-header {
+      padding: 24px 24px 16px;
+      border-bottom: 1px solid var(--gray-2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .modal-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .modal-body {
+      padding: 24px;
+    }
+    
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--gray-2);
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+    
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px;
+      text-align: center;
+    }
+    
+    .empty-state-icon {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 24px;
+      color: var(--gray-4);
+    }
+    
+    .empty-state-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    
+    .empty-state-description {
+      font-size: 15px;
+      color: var(--text-tertiary);
+      margin-bottom: 24px;
+      max-width: 400px;
+    }
+    
+    /* ===== PROJECT DETAIL VIEW ===== */
+    .project-detail-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 40px 24px;
+      border-radius: var(--radius-lg);
+      margin-bottom: 24px;
+    }
+    
+    .project-detail-title {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    
+    .project-detail-meta {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      opacity: 0.9;
+    }
+    
+    .project-detail-links {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      border-radius: var(--radius);
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+    
+    .link-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid var(--gray-2);
+      padding: 0 24px;
+    }
+    
+    .tab {
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-bottom: -2px;
+    }
+    
+    .tab:hover {
+      color: var(--text-primary);
+    }
+    
+    .tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* ===== TEAM MEMBERS ===== */
+    .team-grid {
+      display: grid;
+      gap: 16px;
+    }
+    
+    .team-member {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    
+    .team-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    
+    .team-info {
+      flex: 1;
+    }
+    
+    .team-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .team-email {
+      font-size: 14px;
+      color: var(--text-tertiary);
+    }
+    
+    /* ===== TOAST NOTIFICATION ===== */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--card-bg);
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 2000;
+      animation: slideIn 0.3s ease;
+      max-width: 400px;
+    }
+    
+    .toast.success {
+      border-left: 4px solid var(--success);
+    }
+    
+    .toast.error {
+      border-left: 4px solid var(--danger);
+    }
+    
+    .toast-icon {
+      flex-shrink: 0;
+    }
+    
+    .toast-message {
+      font-size: 14px;
+      color: var(--text-primary);
+      flex: 1;
+    }
+    
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .app-container {
+        padding: 16px;
+      }
+      
+      .header-title h1 {
+        font-size: 24px;
+      }
+      
+      .projects-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .modal {
+        margin: 0;
+        border-radius: 0;
+        max-height: 100vh;
+      }
+      
+      .toast {
+        left: 16px;
+        right: 16px;
+      }
+    }
+    
+    /* ===== UTILITY CLASSES ===== */
+    .hidden {
+      display: none !important;
+    }
+    
+    .text-center {
+      text-align: center;
+    }
+    
+    .flex {
+      display: flex;
+    }
+    
+    .flex-col {
+      flex-direction: column;
+    }
+    
+    .items-center {
+      align-items: center;
+    }
+    
+    .justify-between {
+      justify-content: space-between;
+    }
+    
+    .gap-8 {
+      gap: 8px;
+    }
+    
+    .gap-16 {
+      gap: 16px;
+    }
+    
+    .mb-16 {
+      margin-bottom: 16px;
+    }
+    
+    .mb-24 {
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Loading State -->
+    <div id="loadingView" class="loading-container">
+      <div class="spinner"></div>
+      <p style="color: var(--text-tertiary); font-size: 15px;">Loading your projects...</p>
+    </div>
+    
+    <!-- Projects List View -->
+    <div id="projectsView" class="hidden">
+      <div class="header">
+        <div class="header-content">
+          <div>
+            <div class="header-title">
+              <h1>My Projects</h1>
+            </div>
+            <p class="header-subtitle">Manage your group assignments and tasks</p>
+          </div>
+          <button class="btn btn-primary" onclick="openCreateProjectModal()">
+            <i data-lucide="plus" style="width: 20px; height: 20px;"></i>
+            New Project
+          </button>
+        </div>
+      </div>
+      
+      <div id="projectsContainer"></div>
+    </div>
+    
+    <!-- Project Detail View -->
+    <div id="projectDetailView" class="hidden">
+      <div class="header">
+        <div class="header-content">
+          <button class="btn btn-ghost" onclick="showProjectsList()">
+            <i data-lucide="arrow-left" style="width: 20px; height: 20px;"></i>
+            Back to Projects
+          </button>
+          <button class="btn btn-primary" onclick="openCreateTaskModal()">
+            <i data-lucide="plus" style="width: 20px; height: 20px;"></i>
+            New Task
+          </button>
+        </div>
+      </div>
+      
+      <div id="projectDetailHeader"></div>
+      
+      <div class="tabs">
+        <button class="tab active" data-tab="tasks" onclick="switchTab('tasks')">
+          <i data-lucide="check-square" style="width: 16px; height: 16px; display: inline;"></i>
+          Tasks
+        </button>
+        <button class="tab" data-tab="team" onclick="switchTab('team')">
+          <i data-lucide="users" style="width: 16px; height: 16px; display: inline;"></i>
+          Team
+        </button>
+      </div>
+      
+      <div id="tasksTab" class="tab-content active">
+        <div class="card">
+          <div id="tasksContainer"></div>
+        </div>
+      </div>
+      
+      <div id="teamTab" class="tab-content">
+        <div class="card">
+          <div id="teamContainer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Create Project Modal -->
+  <div id="createProjectModal" class="modal-overlay hidden" onclick="closeModalOnBackdrop(event, 'createProjectModal')">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Create New Project</h2>
+        <button class="btn-icon btn-ghost" onclick="closeModal('createProjectModal')">
+          <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+        </button>
+      </div>
+      <form id="createProjectForm" onsubmit="handleCreateProject(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Project Name *</label>
+            <input type="text" class="form-input" id="projectName" placeholder="e.g., AI Ethics Research Paper" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" id="projectDescription" placeholder="Brief description of the project..."></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Team Members *</label>
+            <div id="teamMembersContainer">
+              <div class="form-row team-member-row">
+                <input type="text" class="form-input" placeholder="Full Name" required>
+                <input type="email" class="form-input" placeholder="Email Address" required>
+              </div>
+            </div>
+            <button type="button" class="btn btn-ghost" onclick="addTeamMemberRow()" style="margin-top: 12px;">
+              <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+              Add Another Member
+            </button>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('createProjectModal')">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" id="createProjectBtn">
+            <span id="createProjectBtnText">Create Project</span>
+            <div id="createProjectSpinner" class="spinner hidden" style="width: 20px; height: 20px; border-width: 2px;"></div>
+          </button>
+        </div>
+</form>
+    </div>
+  </div>
+  
+  <!-- Create Task Modal -->
+  <div id="createTaskModal" class="modal-overlay hidden" onclick="closeModalOnBackdrop(event, 'createTaskModal')">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Create New Task</h2>
+        <button class="btn-icon btn-ghost" onclick="closeModal('createTaskModal')">
+          <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+        </button>
+      </div>
+      <form id="createTaskForm" onsubmit="handleCreateTask(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Task Title *</label>
+            <input type="text" class="form-input" id="taskTitle" placeholder="e.g., Research AI ethics frameworks" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" id="taskDescription" placeholder="Task details and requirements..."></textarea>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Assign To *</label>
+              <select class="form-select" id="taskAssignedTo" required>
+                <option value="">Select team member</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Priority *</label>
+              <select class="form-select" id="taskPriority" required>
+                <option value="Low">Low</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Due Date</label>
+            <input type="date" class="form-input" id="taskDueDate">
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('createTaskModal')">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" id="createTaskBtn">
+            <span id="createTaskBtnText">Create Task</span>
+            <div id="createTaskSpinner" class="spinner hidden" style="width: 20px; height: 20px; border-width: 2px;"></div>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ===== STATE MANAGEMENT =====
+    let currentProject = null;
+    let currentProjectTeam = [];
+    let currentProjectTasks = [];
+    
+    // ===== INITIALIZATION =====
+    document.addEventListener('DOMContentLoaded', function() {
+      loadProjects();
+      lucide.createIcons();
+    });
+    
+    // ===== LOAD PROJECTS =====
+    function loadProjects() {
+      showView('loadingView');
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            renderProjects(result.projects);
+            showView('projectsView');
+          } else {
+            showToast('error', result.message || 'Failed to load projects');
+            showView('projectsView');
+          }
+        })
+        .withFailureHandler(function(error) {
+          showToast('error', 'Error loading projects: ' + error.message);
+          showView('projectsView');
+        })
+        .getProjects();
+    }
+    
+    // ===== RENDER PROJECTS =====
+    function renderProjects(projects) {
+      const container = document.getElementById('projectsContainer');
+      
+      if (!projects || projects.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <svg class="empty-state-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+            </svg>
+            <h3 class="empty-state-title">No projects yet</h3>
+            <p class="empty-state-description">Create your first project to start collaborating with your team on assignments.</p>
+            <button class="btn btn-primary" onclick="openCreateProjectModal()">
+              <i data-lucide="plus" style="width: 20px; height: 20px;"></i>
+              Create Your First Project
+            </button>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+      
+      container.innerHTML = `
+        <div class="projects-grid">
+          ${projects.map(project => `
+            <div class="project-card" onclick="loadProjectDetail('${project.projectId}')">
+              <div class="project-card-header">
+                <div class="project-icon">${getProjectInitials(project.projectName)}</div>
+              </div>
+              <h3 class="project-title">${escapeHtml(project.projectName)}</h3>
+              <p class="project-description">${escapeHtml(project.description || 'No description')}</p>
+              <div class="project-footer">
+                <div class="project-date">
+                  <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
+                  Created ${project.createdDate}
+                </div>
+                <i data-lucide="arrow-right" style="width: 20px; height: 20px; color: var(--primary);"></i>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      
+      lucide.createIcons();
+    }
+    
+    // ===== LOAD PROJECT DETAIL =====
+    function loadProjectDetail(projectId) {
+      showView('loadingView');
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            currentProject = result.project;
+            currentProjectTeam = result.team;
+            currentProjectTasks = result.tasks;
+            renderProjectDetail();
+            showView('projectDetailView');
+          } else {
+            showToast('error', result.message || 'Failed to load project');
+            showView('projectsView');
+          }
+        })
+        .withFailureHandler(function(error) {
+          showToast('error', 'Error loading project: ' + error.message);
+          showView('projectsView');
+        })
+        .getProjectDetails(projectId);
+    }
+    
+    // ===== RENDER PROJECT DETAIL =====
+    function renderProjectDetail() {
+      // Render header
+      const headerContainer = document.getElementById('projectDetailHeader');
+      headerContainer.innerHTML = `
+        <div class="project-detail-header">
+          <h1 class="project-detail-title">${escapeHtml(currentProject.projectName)}</h1>
+          <div class="project-detail-meta">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="users" style="width: 18px; height: 18px;"></i>
+              ${currentProjectTeam.length} Team Member${currentProjectTeam.length !== 1 ? 's' : ''}
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="check-square" style="width: 18px; height: 18px;"></i>
+              ${currentProjectTasks.length} Task${currentProjectTasks.length !== 1 ? 's' : ''}
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="calendar" style="width: 18px; height: 18px;"></i>
+              Created ${currentProject.createdDate}
+            </div>
+          </div>
+          <div class="project-detail-links">
+            <a href="${currentProject.docUrl}" target="_blank" class="link-btn">
+              <i data-lucide="file-text" style="width: 18px; height: 18px;"></i>
+              Document
+            </a>
+            <a href="${currentProject.slidesUrl}" target="_blank" class="link-btn">
+              <i data-lucide="presentation" style="width: 18px; height: 18px;"></i>
+              Slides
+            </a>
+            <a href="${currentProject.folderUrl}" target="_blank" class="link-btn">
+              <i data-lucide="folder" style="width: 18px; height: 18px;"></i>
+              Drive Folder
+            </a>
+          </div>
+        </div>
+      `;
+      
+      // Render tasks
+      renderTasks();
+      
+      // Render team
+      renderTeam();
+      
+      lucide.createIcons();
+    }
+    
+    // ===== RENDER TASKS =====
+    function renderTasks() {
+      const container = document.getElementById('tasksContainer');
+      
+      if (currentProjectTasks.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <svg class="empty-state-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <h3 class="empty-state-title">No tasks yet</h3>
+            <p class="empty-state-description">Create your first task to start organizing your work.</p>
+            <button class="btn btn-primary" onclick="openCreateTaskModal()">
+              <i data-lucide="plus" style="width: 20px; height: 20px;"></i>
+              Create First Task
+            </button>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+      
+      // Group tasks by status
+      const todoTasks = currentProjectTasks.filter(t => t.status === 'To Do');
+      const inProgressTasks = currentProjectTasks.filter(t => t.status === 'In Progress');
+      const doneTasks = currentProjectTasks.filter(t => t.status === 'Done');
+      
+      container.innerHTML = `
+        ${renderTaskSection('To Do', todoTasks, 'todo')}
+        ${renderTaskSection('In Progress', inProgressTasks, 'in-progress')}
+        ${renderTaskSection('Done', doneTasks, 'done')}
+      `;
+      
+      lucide.createIcons();
+    }
+    
+    function renderTaskSection(title, tasks, statusClass) {
+      if (tasks.length === 0) return '';
+      
+      return `
+        <div class="mb-24">
+          <h3 style="font-size: 14px; font-weight: 700; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 12px; letter-spacing: 0.05em;">
+            ${title} (${tasks.length})
+          </h3>
+          <div class="tasks-container">
+            ${tasks.map(task => renderTaskCard(task, statusClass)).join('')}
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderTaskCard(task, statusClass) {
+      const isDone = task.status === 'Done';
+      const priorityClass = task.priority.toLowerCase();
+      
+      return `
+        <div class="task-card priority-${priorityClass} status-${statusClass}">
+          <div class="task-header">
+            <div class="task-checkbox ${isDone ? 'checked' : ''}" onclick="toggleTaskStatus('${task.taskId}', '${task.status}')">
+              ${isDone ? '<i data-lucide="check" style="width: 16px; height: 16px; color: white;"></i>' : ''}
+            </div>
+            <div style="flex: 1;">
+              <h4 class="task-title">${escapeHtml(task.title)}</h4>
+              ${task.description ? `<p class="task-description">${escapeHtml(task.description)}</p>` : ''}
+            </div>
+          </div>
+          <div class="task-meta">
+            <span class="badge badge-priority ${priorityClass}">
+              ${task.priority}
+            </span>
+            <span class="badge badge-status ${statusClass}">
+              ${task.status}
+            </span>
+            <div class="task-meta-item">
+              <i data-lucide="user" style="width: 14px; height: 14px;"></i>
+              ${escapeHtml(task.assignedTo)}
+            </div>
+            ${task.dueDate ? `
+              <div class="task-meta-item">
+                <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
+                ${task.dueDate}
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+    
+    // ===== RENDER TEAM =====
+    function renderTeam() {
+      const container = document.getElementById('teamContainer');
+      
+      container.innerHTML = `
+        <div class="team-grid">
+          ${currentProjectTeam.map(member => `
+            <div class="team-member">
+              <div class="team-avatar">${getInitials(member.name)}</div>
+              <div class="team-info">
+                <div class="team-name">${escapeHtml(member.name)}</div>
+                <div class="team-email">${escapeHtml(member.email)}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+    
+    // ===== TOGGLE TASK STATUS =====
+    function toggleTaskStatus(taskId, currentStatus) {
+      let newStatus;
+      
+      if (currentStatus === 'To Do') {
+        newStatus = 'In Progress';
+      } else if (currentStatus === 'In Progress') {
+        newStatus = 'Done';
+      } else {
+        newStatus = 'To Do';
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result.success) {
+            showToast('success', result.message);
+            loadProjectDetail(currentProject.projectId);
+          } else {
+            showToast('error', result.message);
+          }
+        })
+        .withFailureHandler(function(error) {
+          showToast('error', 'Error updating task: ' + error.message);
+        })
+        .updateTaskStatus(taskId, newStatus);
+    }
+    
+    // ===== SWITCH TAB =====
+    function switchTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+      
+      // Update tab content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.getElementById(tabName + 'Tab').classList.add('active');
+      
+      lucide.createIcons();
+    }
+    
+    // ===== MODAL FUNCTIONS =====
+    function openCreateProjectModal() {
+      document.getElementById('createProjectModal').classList.remove('hidden');
+      document.getElementById('projectName').focus();
+    }
+    
+    function openCreateTaskModal() {
+      // Populate team members dropdown
+      const select = document.getElementById('taskAssignedTo');
+      select.innerHTML = '<option value="">Select team member</option>';
+      
+      currentProjectTeam.forEach(member => {
+        const option = document.createElement('option');
+        option.value = member.name;
+        option.textContent = member.name;
+        select.appendChild(option);
+      });
+      
+      // Set min date to today
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('taskDueDate').setAttribute('min', today);
+      
+      document.getElementById('createTaskModal').classList.remove('hidden');
+      document.getElementById('taskTitle').focus();
+    }
+    
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+      
+      // Reset forms
+      if (modalId === 'createProjectModal') {
+        document.getElementById('createProjectForm').reset();
+        // Reset team members to one row
+        const container = document.getElementById('teamMembersContainer');
+        container.innerHTML = `
+          <div class="form-row team-member-row">
+            <input type="text" class="form-input" placeholder="Full Name" required>
+            <input type="email" class="form-input" placeholder="Email Address" required>
+          </div>
+        `;
+      } else if (modalId === 'createTaskModal') {
+        document.getElementById('createTaskForm').reset();
+      }
+    }
+    
+    function closeModalOnBackdrop(event, modalId) {
+      if (event.target.classList.contains('modal-overlay')) {
+        closeModal(modalId);
+      }
+    }
+    
+    function addTeamMemberRow() {
+      const container = document.getElementById('teamMembersContainer');
+      const newRow = document.createElement('div');
+      newRow.className = 'form-row team-member-row';
+      newRow.style.marginTop = '12px';
+      newRow.innerHTML = `
+        <input type="text" class="form-input" placeholder="Full Name" required>
+        <input type="email" class="form-input" placeholder="Email Address" required>
+      `;
+      container.appendChild(newRow);
+    }
+    
+    // ===== HANDLE CREATE PROJECT =====
+    function handleCreateProject(event) {
+      event.preventDefault();
+      
+      const btn = document.getElementById('createProjectBtn');
+      const btnText = document.getElementById('createProjectBtnText');
+      const spinner = document.getElementById('createProjectSpinner');
+      
+      btn.disabled = true;
+      btnText.classList.add('hidden');
+      spinner.classList.remove('hidden');
+      
+      const projectName = document.getElementById('projectName').value;
+      const description = document.getElementById('projectDescription').value;
+      
+      // Get team members
+      const memberRows = document.querySelectorAll('.team-member-row');
+      const teamMembers = Array.from(memberRows).map(row => {
+        const inputs = row.querySelectorAll('input');
+        return {
+          name: inputs[0].value,
+          email: inputs[1].value
+        };
+      });
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          btn.disabled = false;
+          btnText.classList.remove('hidden');
+          spinner.classList.add('hidden');
+          
+          if (result.success) {
+            showToast('success', result.message);
+            closeModal('createProjectModal');
+            loadProjects();
+          } else {
+            showToast('error', result.message);
+          }
+        })
+        .withFailureHandler(function(error) {
+          btn.disabled = false;
+          btnText.classList.remove('hidden');
+          spinner.classList.add('hidden');
+          showToast('error', 'Error creating project: ' + error.message);
+        })
+        .createProject({
+          projectName: projectName,
+          description: description,
+          teamMembers: teamMembers
+        });
+    }
+    
+    // ===== HANDLE CREATE TASK =====
+    function handleCreateTask(event) {
+      event.preventDefault();
+      
+      const btn = document.getElementById('createTaskBtn');
+      const btnText = document.getElementById('createTaskBtnText');
+      const spinner = document.getElementById('createTaskSpinner');
+      
+      btn.disabled = true;
+      btnText.classList.add('hidden');
+      spinner.classList.remove('hidden');
+      
+      const taskData = {
+        projectId: currentProject.projectId,
+        title: document.getElementById('taskTitle').value,
+        description: document.getElementById('taskDescription').value,
+        assignedTo: document.getElementById('taskAssignedTo').value,
+        priority: document.getElementById('taskPriority').value,
+        dueDate: document.getElementById('taskDueDate').value
+      };
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          btn.disabled = false;
+          btnText.classList.remove('hidden');
+          spinner.classList.add('hidden');
+          
+          if (result.success) {
+            showToast('success', result.message);
+            closeModal('createTaskModal');
+            loadProjectDetail(currentProject.projectId);
+          } else {
+            showToast('error', result.message);
+          }
+        })
+        .withFailureHandler(function(error) {
+          btn.disabled = false;
+          btnText.classList.remove('hidden');
+          spinner.classList.add('hidden');
+          showToast('error', 'Error creating task: ' + error.message);
+        })
+        .createTask(taskData);
+    }
+    
+    // ===== NAVIGATION =====
+    function showProjectsList() {
+      showView('projectsView');
+      loadProjects();
+    }
+    
+    function showView(viewId) {
+      document.getElementById('loadingView').classList.add('hidden');
+      document.getElementById('projectsView').classList.add('hidden');
+      document.getElementById('projectDetailView').classList.add('hidden');
+      document.getElementById(viewId).classList.remove('hidden');
+    }
+    
+    // ===== TOAST NOTIFICATIONS =====
+    function showToast(type, message) {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      const icon = type === 'success' 
+        ? '<i data-lucide="check-circle" style="width: 20px; height: 20px; color: var(--success);"></i>'
+        : '<i data-lucide="alert-circle" style="width: 20px; height: 20px; color: var(--danger);"></i>';
+      
+      toast.innerHTML = `
+        <div class="toast-icon">${icon}</div>
+        <div class="toast-message">${escapeHtml(message)}</div>
+      `;
+      
+      document.body.appendChild(toast);
+      lucide.createIcons();
+      
+      setTimeout(() => {
+        toast.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => {
+          document.body.removeChild(toast);
+        }, 300);
+      }, 4000);
+    }
+    
+    // ===== UTILITY FUNCTIONS =====
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    function getInitials(name) {
+      return name
+        .split(' ')
+        .map(word => word[0])
+        .join('')
+        .toUpperCase()
+        .substring(0, 2);
+    }
+    
+    function getProjectInitials(name) {
+      const words = name.split(' ');
+      if (words.length >= 2) {
+        return (words[0][0] + words[1][0]).toUpperCase();
+      }
+      return name.substring(0, 2).toUpperCase();
+    }
+  </script>
+</body>
+</html>
