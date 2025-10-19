@@ -50,3 +50,52 @@ Common utilities used across multiple challenges:
 Centralized logging:
 - `logInfo()`, `logError()`, `logWarning()`
 - Used by: All challenges
+
+### Challenge 4: Compound Interest Calculator
+**Description**: Web-based calculator for compound interest with visual growth graphs
+
+**Key Features**:
+- Flexible input parameters (principal, deposits, duration, rate, frequency)
+- Three compounding frequencies (daily, monthly, annually)
+- Real-time calculations with detailed breakdown
+- Interactive Chart.js graph showing growth over time
+- Modern, responsive UI with smooth animations
+
+**Requirements Met**:
+- ✅ Principal amount input
+- ✅ Monthly deposit input
+- ✅ Investment duration input (years)
+- ✅ Annual interest rate input (%)
+- ✅ Compounding frequency selector (Daily/Monthly/Annually)
+- ✅ Total principal output
+- ✅ Interest amount output
+- ✅ Maturity value output
+- ✅ Simple web form with all inputs
+- ✅ "Calculate" button
+- ✅ Result display section
+- ✅ **BONUS:** Interactive graph comparing maturity value vs total principal
+
+**Implementation Notes**:
+- Uses accurate compound interest formula with regular deposits
+- Year-by-year breakdown calculation for smooth graph visualization
+- Chart.js for interactive data visualization
+- Gradient design matching overall project aesthetic
+- Client-side validation with server-side calculation
+
+**Shared Code Used**:
+- None (standalone implementation)
+
+**Technical Stack**:
+- Google Apps Script (server-side calculations)
+- HTML5/CSS3/JavaScript (client-side UI)
+- Chart.js 4.4.0 (data visualization)
+- Google Fonts (Inter)
+
+**Calculation Formulas**:
+- Principal FV: `P × (1 + r/n)^(nt)`
+- Deposits FV: Sum of each deposit's future value
+- Total compounding periods vary by frequency (365, 12, or 1)
+
+**Status**: ✅ Complete
+
+**Last Updated**: 2025-01-XX

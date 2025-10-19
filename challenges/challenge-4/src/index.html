@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compound Interest Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 900px;
+      width: 100%;
+      overflow: hidden;
+      animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2.2em;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .header p {
+      font-size: 1.1em;
+      opacity: 0.95;
+    }
+
+    .emoji {
+      font-size: 3.5em;
+      margin-bottom: 15px;
+      display: block;
+    }
+
+    .content {
+      padding: 40px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #333;
+      font-size: 0.95em;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: 14px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 16px;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.3s ease;
+      background: white;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .input-with-prefix {
+      position: relative;
+    }
+
+    .input-prefix {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #666;
+      font-weight: 600;
+      pointer-events: none;
+    }
+
+    .input-with-prefix input {
+      padding-left: 48px;
+    }
+
+    .input-suffix {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #666;
+      font-weight: 600;
+      pointer-events: none;
+    }
+
+    .input-with-suffix input {
+      padding-right: 48px;
+    }
+
+    .calculate-btn {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .calculate-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
+    }
+
+    .calculate-btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .calculate-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .results {
+      margin-top: 32px;
+      display: none;
+    }
+
+    .results.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .result-card {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      padding: 24px;
+      border-radius: 16px;
+      border: 2px solid #dee2e6;
+      transition: all 0.3s ease;
+    }
+
+    .result-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .result-card.highlight {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-color: #667eea;
+    }
+
+    .result-label {
+      font-size: 0.9em;
+      font-weight: 600;
+      opacity: 0.8;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .result-value {
+      font-size: 1.8em;
+      font-weight: 700;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 400px;
+      background: #f8f9fa;
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 24px;
+    }
+
+    .error-message {
+      background: #fee;
+      color: #c33;
+      padding: 16px 20px;
+      border-radius: 12px;
+      border-left: 4px solid #c33;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .error-message.active {
+      display: block;
+      animation: shake 0.5s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% {
+        transform: translateX(0);
+      }
+      25% {
+        transform: translateX(-10px);
+      }
+      75% {
+        transform: translateX(10px);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 1.8em;
+      }
+
+      .content {
+        padding: 24px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-container {
+        height: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <span class="emoji">💰</span>
+      <h1>Compound Interest Calculator</h1>
+      <p>Calculate your investment growth over time</p>
+    </div>
+
+    <div class="content">
+      <form id="calculator-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="principal">Initial Principal</label>
+            <div class="input-with-prefix">
+              <span class="input-prefix">RM</span>
+              <input type="number" id="principal" step="0.01" min="0" value="10000" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="monthly-deposit">Monthly Deposit</label>
+            <div class="input-with-prefix">
+              <span class="input-prefix">RM</span>
+              <input type="number" id="monthly-deposit" step="0.01" min="0" value="500" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="years">Investment Duration</label>
+            <div class="input-with-suffix">
+              <input type="number" id="years" step="0.5" min="0.5" value="10" required>
+              <span class="input-suffix">years</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="rate">Annual Interest Rate</label>
+            <div class="input-with-suffix">
+              <input type="number" id="rate" step="0.1" min="0" value="5" required>
+              <span class="input-suffix">%</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="frequency">Compounding Frequency</label>
+            <select id="frequency" required>
+              <option value="daily">Daily</option>
+              <option value="monthly" selected>Monthly</option>
+              <option value="annually">Annually</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" id="calculate-btn" class="calculate-btn">
+          Calculate
+        </button>
+      </form>
+
+      <div id="error-message" class="error-message"></div>
+
+      <div id="results" class="results">
+        <div class="results-grid">
+          <div class="result-card">
+            <div class="result-label">Total Principal</div>
+            <div class="result-value" id="total-principal">RM 0.00</div>
+          </div>
+
+          <div class="result-card">
+            <div class="result-label">Interest Earned</div>
+            <div class="result-value" id="interest-earned">RM 0.00</div>
+          </div>
+
+          <div class="result-card highlight">
+            <div class="result-label">Maturity Value</div>
+            <div class="result-value" id="maturity-value">RM 0.00</div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <canvas id="growth-chart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let growthChart = null;
+
+    // Form submission handler
+    document.getElementById('calculator-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      calculateInterest();
+    });
+
+    /**
+     * Main calculation function
+     */
+    function calculateInterest() {
+      // Get form values
+      const params = {
+        principal: parseFloat(document.getElementById('principal').value),
+        monthlyDeposit: parseFloat(document.getElementById('monthly-deposit').value),
+        years: parseFloat(document.getElementById('years').value),
+        rate: parseFloat(document.getElementById('rate').value),
+        frequency: document.getElementById('frequency').value
+      };
+
+      // Validate inputs
+      if (params.principal < 0 || params.monthlyDeposit < 0 || params.years <= 0 || params.rate < 0) {
+        showError('Please enter valid positive numbers');
+        return;
+      }
+
+      // Show loading state
+      const btn = document.getElementById('calculate-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading-spinner"></span> Calculating...';
+      hideError();
+      hideResults();
+
+      // Call server-side function
+      google.script.run
+        .withSuccessHandler(handleSuccess)
+        .withFailureHandler(handleError)
+        .calculateCompoundInterest(params);
+    }
+
+    /**
+     * Handles successful calculation
+     * @param {Object} result - Calculation results
+     */
+    function handleSuccess(result) {
+      const btn = document.getElementById('calculate-btn');
+      btn.disabled = false;
+      btn.innerHTML = 'Calculate';
+
+      if (!result.success) {
+        showError(result.error || 'Calculation failed');
+        return;
+      }
+
+      // Display results
+      document.getElementById('total-principal').textContent = formatCurrency(result.totalPrincipal);
+      document.getElementById('interest-earned').textContent = formatCurrency(result.interestEarned);
+      document.getElementById('maturity-value').textContent = formatCurrency(result.maturityValue);
+
+      // Show results section
+      showResults();
+
+      // Draw chart
+      drawChart(result.yearlyData);
+    }
+
+    /**
+     * Handles calculation errors
+     * @param {Error} error - Error object
+     */
+    function handleError(error) {
+      const btn = document.getElementById('calculate-btn');
+      btn.disabled = false;
+      btn.innerHTML = 'Calculate';
+
+      showError(error.message || 'An error occurred during calculation');
+    }
+
+    /**
+     * Draws the growth chart
+     * @param {Array} yearlyData - Yearly breakdown data
+     */
+    function drawChart(yearlyData) {
+      const ctx = document.getElementById('growth-chart');
+
+      // Destroy existing chart if it exists
+      if (growthChart) {
+        growthChart.destroy();
+      }
+
+      const years = yearlyData.map(d => `Year ${d.year}`);
+      const principals = yearlyData.map(d => d.totalPrincipal);
+      const maturityValues = yearlyData.map(d => d.maturityValue);
+
+      growthChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: years,
+          datasets: [
+            {
+              label: 'Total Principal Invested',
+              data: principals,
+              borderColor: '#6c757d',
+              backgroundColor: 'rgba(108, 117, 125, 0.1)',
+              borderWidth: 3,
+              tension: 0.4,
+              fill: true
+            },
+            {
+              label: 'Maturity Value',
+              data: maturityValues,
+              borderColor: '#667eea',
+              backgroundColor: 'rgba(102, 126, 234, 0.1)',
+              borderWidth: 3,
+              tension: 0.4,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                font: {
+                  size: 14,
+                  weight: '600',
+                  family: "'Inter', sans-serif"
+                },
+                padding: 20
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              titleFont: {
+                size: 14,
+                weight: '600'
+              },
+              bodyFont: {
+                size: 13
+              },
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': RM ' + context.parsed.y.toLocaleString('en-MY', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  });
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return 'RM ' + value.toLocaleString('en-MY');
+                },
+                font: {
+                  size: 12,
+                  family: "'Inter', sans-serif"
+                }
+              },
+              grid: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            x: {
+              ticks: {
+                font: {
+                  size: 12,
+                  family: "'Inter', sans-serif"
+                }
+              },
+              grid: {
+                display: false
+              }
+            }
+          }
+        }
+      });
+    }
+
+    /**
+     * Formats a number as currency
+     * @param {number} amount - Amount to format
+     * @returns {string} Formatted currency string
+     */
+    function formatCurrency(amount) {
+      return 'RM ' + amount.toLocaleString('en-MY', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    /**
+     * Shows the results section
+     */
+    function showResults() {
+      document.getElementById('results').classList.add('active');
+    }
+
+    /**
+     * Hides the results section
+     */
+    function hideResults() {
+      document.getElementById('results').classList.remove('active');
+    }
+
+    /**
+     * Shows an error message
+     * @param {string} message - Error message to display
+     */
+    function showError(message) {
+      const errorDiv = document.getElementById('error-message');
+      errorDiv.textContent = message;
+      errorDiv.classList.add('active');
+    }
+
+    /**
+     * Hides the error message
+     */
+    function hideError() {
+      document.getElementById('error-message').classList.remove('active');
+    }
+
+    // Initialize with default calculation on page load
+    window.addEventListener('load', function() {
+      // Optional: Auto-calculate with default values
+      // calculateInterest();
+    });
+  </script>
+</body>
+</html>
