@@ -37,6 +37,28 @@ This project leverages **solid context engineering** to maintain code consistenc
 - **Efficiency**: No need to copy-paste code into prompts
 - **Scalability**: As the project grows, context grows with it automatically
 
+### Setting Up GitHub Integration with Claude
+
+Follow these steps to connect your repository to Claude:
+
+#### Step 1: Select GitHub Integration
+![Step 1 - Select GitHub Integration](docs/pictures/step-1-select-github-integration.png)
+
+In Claude, click on the GitHub integration option to connect your repository.
+
+#### Step 2: Choose Files to Add
+![Step 2 - Choose Files to Add](docs/pictures/step-2-choose-files-to-add.png)
+
+Select the files and folders you want Claude to have access to. You can add:
+- Entire directories like `challenges/`, `shared/`, `docs/`
+- Specific configuration files like `.github/workflows/`, `appsscript.json`
+- Documentation files for context
+
+#### Step 3: Start Prompting
+![Step 3 - Start Prompting](docs/pictures/step-3-start-prompting.png)
+
+Once connected, Claude automatically reads your codebase and you can start asking questions or requesting code generation. Claude will use your existing code patterns, utilities, and conventions automatically.
+
 ## Quick Start
 
 ### 1. Clone & Setup
