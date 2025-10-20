@@ -590,6 +590,99 @@ function getCurrentUserEmail() {
 }
 
 /**
+ * Debug function - shows exactly what's happening
+ */
+function debugProjectLoading() {
+  const ss = getSpreadsheet();
+  const projectsSheet = ss.getSheetByName('Projects');
+  const teamSheet = ss.getSheetByName('Team');
+  const userEmail = Session.getActiveUser().getEmail();
+  
+  Logger.log('='.repeat(80));
+  Logger.log('🔍 DEBUGGING PROJECT LOADING');
+  Logger.log('='.repeat(80));
+  Logger.log('Current user email: ' + userEmail);
+  Logger.log('');
+  
+  // Check Projects sheet
+  Logger.log('📊 PROJECTS SHEET:');
+  const projectData = projectsSheet.getDataRange().getValues();
+  Logger.log('Total rows (including header): ' + projectData.length);
+  
+  if (projectData.length < 2) {
+    Logger.log('❌ No projects found in Projects sheet!');
+  } else {
+    for (let i = 1; i < projectData.length; i++) {
+      Logger.log('  Row ' + i + ': ProjectID=' + projectData[i][0] + ', Name=' + projectData[i][1]);
+    }
+  }
+  Logger.log('');
+  
+  // Check Team sheet
+  Logger.log('👥 TEAM SHEET:');
+  const teamData = teamSheet.getDataRange().getValues();
+  Logger.log('Total rows (including header): ' + teamData.length);
+  
+  if (teamData.length < 2) {
+    Logger.log('❌ No team members found in Team sheet!');
+  } else {
+    for (let i = 1; i < teamData.length; i++) {
+      const memberEmail = teamData[i][3];
+      const isCurrentUser = memberEmail === userEmail;
+      Logger.log('  Row ' + i + ': ProjectID=' + teamData[i][1] + ', Name=' + teamData[i][2] + ', Email=' + memberEmail + (isCurrentUser ? ' ← YOU!' : ''));
+    }
+  }
+  Logger.log('');
+  
+  // Find user's projects
+  Logger.log('🎯 MATCHING PROJECTS:');
+  const userProjectIds = [];
+  for (let i = 1; i < teamData.length; i++) {
+    Logger.log('  Comparing: "' + teamData[i][3] + '" === "' + userEmail + '"');
+    if (teamData[i][3] === userEmail) {
+      userProjectIds.push(teamData[i][1]);
+      Logger.log('    ✅ MATCH! Added project: ' + teamData[i][1]);
+    } else {
+      Logger.log('    ❌ No match');
+    }
+  }
+  
+  Logger.log('');
+  Logger.log('📋 SUMMARY:');
+  Logger.log('Your email: ' + userEmail);
+  Logger.log('Projects you are a member of: ' + userProjectIds.length);
+  if (userProjectIds.length > 0) {
+    Logger.log('Project IDs: ' + userProjectIds.join(', '));
+  }
+  Logger.log('='.repeat(80));
+  
+  // Now simulate what getProjects() would return
+  Logger.log('');
+  Logger.log('📤 SIMULATING getProjects() RETURN:');
+  const projects = [];
+  for (let i = 1; i < projectData.length; i++) {
+    if (userProjectIds.indexOf(projectData[i][0]) > -1) {
+      projects.push({
+        projectId: projectData[i][0],
+        projectName: projectData[i][1]
+      });
+    }
+  }
+  Logger.log('Would return ' + projects.length + ' project(s)');
+  projects.forEach(function(p) {
+    Logger.log('  - ' + p.projectId + ': ' + p.projectName);
+  });
+  
+  return {
+    userEmail: userEmail,
+    totalProjects: projectData.length - 1,
+    totalTeamMembers: teamData.length - 1,
+    userProjectCount: userProjectIds.length,
+    userProjects: projects
+  };
+}
+
+/**
  * Test function - creates a demo project
  */
 function testCreateProject() {
@@ -603,4 +696,21 @@ function testCreateProject() {
   
   Logger.log(result);
   return result;
+}
+
+function testGetProjects() {
+Logger.log('Testing getProjects()...');
+const result = getProjects();
+Logger.log('Result: ' + JSON.stringify(result, null, 2));
+
+if (result.success) {
+  Logger.log('✅ Success! Found ' + result.projects.length + ' projects');
+  result.projects.forEach(function(p) {
+    Logger.log('  - ' + p.projectName);
+  });
+} else {
+  Logger.log('❌ Failed: ' + result.message);
+}
+
+return result;
 }
