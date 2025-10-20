@@ -25,18 +25,38 @@ function getSpreadsheet() {
     
     if (!ssId) {
       // Create new spreadsheet
+      Logger.log('Creating new spreadsheet...');
       const ss = SpreadsheetApp.create('Student Project Hub - Database');
       ssId = ss.getId();
       props.setProperty('SPREADSHEET_ID', ssId);
       
       // Initialize sheets
       initializeSheets(ss);
+      Logger.log('Spreadsheet created with ID: ' + ssId);
       return ss;
     }
     
-    return SpreadsheetApp.openById(ssId);
+    // Try to open existing spreadsheet
+    try {
+      const ss = SpreadsheetApp.openById(ssId);
+      
+      // Verify sheets exist
+      if (!ss.getSheetByName('Projects') || !ss.getSheetByName('Tasks') || !ss.getSheetByName('Team')) {
+        Logger.log('Sheets missing, reinitializing...');
+        initializeSheets(ss);
+      }
+      
+      return ss;
+    } catch (e) {
+      // If can't open, clear the property and create new one
+      Logger.log('Could not open spreadsheet, creating new one...');
+      props.deleteProperty('SPREADSHEET_ID');
+      return getSpreadsheet(); // Recursive call to create new one
+    }
+    
   } catch (error) {
     Logger.log('Error in getSpreadsheet: ' + error.message);
+    Logger.log(error.stack);
     throw new Error('Failed to access database: ' + error.message);
   }
 }
@@ -47,30 +67,50 @@ function getSpreadsheet() {
  */
 function initializeSheets(ss) {
   try {
-    // Remove default sheet
+    Logger.log('Initializing sheets...');
+    
+    // Remove default sheet if it exists
     const defaultSheet = ss.getSheetByName('Sheet1');
     if (defaultSheet) {
       ss.deleteSheet(defaultSheet);
     }
     
-    // Create Projects sheet
-    const projectsSheet = ss.insertSheet('Projects');
+    // Create or get Projects sheet
+    let projectsSheet = ss.getSheetByName('Projects');
+    if (!projectsSheet) {
+      projectsSheet = ss.insertSheet('Projects');
+    }
+    
+    // Clear and set headers
+    projectsSheet.clear();
     projectsSheet.getRange('A1:H1').setValues([[
       'ProjectID', 'ProjectName', 'Description', 'CreatedDate', 
       'FolderURL', 'DocURL', 'SlidesURL', 'CalendarID'
     ]]).setFontWeight('bold').setBackground('#4285f4').setFontColor('#ffffff');
     projectsSheet.setFrozenRows(1);
     
-    // Create Tasks sheet
-    const tasksSheet = ss.insertSheet('Tasks');
+    // Create or get Tasks sheet
+    let tasksSheet = ss.getSheetByName('Tasks');
+    if (!tasksSheet) {
+      tasksSheet = ss.insertSheet('Tasks');
+    }
+    
+    // Clear and set headers
+    tasksSheet.clear();
     tasksSheet.getRange('A1:J1').setValues([[
       'TaskID', 'ProjectID', 'Title', 'Description', 'AssignedTo', 
       'Priority', 'Status', 'DueDate', 'CreatedDate', 'EventID'
     ]]).setFontWeight('bold').setBackground('#34a853').setFontColor('#ffffff');
     tasksSheet.setFrozenRows(1);
     
-    // Create Team sheet
-    const teamSheet = ss.insertSheet('Team');
+    // Create or get Team sheet
+    let teamSheet = ss.getSheetByName('Team');
+    if (!teamSheet) {
+      teamSheet = ss.insertSheet('Team');
+    }
+    
+    // Clear and set headers
+    teamSheet.clear();
     teamSheet.getRange('A1:D1').setValues([[
       'MemberID', 'ProjectID', 'Name', 'Email'
     ]]).setFontWeight('bold').setBackground('#fbbc04').setFontColor('#ffffff');
@@ -79,7 +119,33 @@ function initializeSheets(ss) {
     Logger.log('Sheets initialized successfully');
   } catch (error) {
     Logger.log('Error in initializeSheets: ' + error.message);
+    Logger.log(error.stack);
     throw error;
+  }
+}
+
+/**
+ * Manual function to reset the database (for testing)
+ * Run this from the script editor if you need to start fresh
+ */
+function resetDatabase() {
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const ssId = props.getProperty('SPREADSHEET_ID');
+    
+    if (ssId) {
+      const ss = SpreadsheetApp.openById(ssId);
+      initializeSheets(ss);
+      Logger.log('Database reset successfully');
+      return { success: true, message: 'Database reset successfully' };
+    } else {
+      Logger.log('No database found, creating new one');
+      getSpreadsheet();
+      return { success: true, message: 'New database created' };
+    }
+  } catch (error) {
+    Logger.log('Error in resetDatabase: ' + error.message);
+    return { success: false, message: error.message };
   }
 }
 
@@ -100,12 +166,16 @@ function createProject(projectData) {
     const projectsSheet = ss.getSheetByName('Projects');
     const teamSheet = ss.getSheetByName('Team');
     
+    if (!projectsSheet || !teamSheet) {
+      throw new Error('Database sheets not found. Please try again.');
+    }
+    
     // Generate unique project ID
     const projectId = 'PROJ-' + new Date().getTime();
     const createdDate = new Date();
     
     // Create Google Drive folder
-    const folderName = `[Project] ${projectData.projectName}`;
+    const folderName = '[Project] ' + projectData.projectName;
     const folder = DriveApp.createFolder(folderName);
     const folderUrl = folder.getUrl();
     
@@ -128,22 +198,20 @@ function createProject(projectData) {
     const calendarId = calendar.getId();
     
     // Share with team members
-    const memberIds = [];
     projectData.teamMembers.forEach(function(member) {
-      // Share folder
-      folder.addEditor(member.email);
-      
-      // Share calendar
       try {
+        // Share folder
+        folder.addEditor(member.email);
+        
+        // Share calendar
         calendar.addGuest(member.email);
       } catch (e) {
-        Logger.log('Could not add calendar guest: ' + member.email);
+        Logger.log('Could not share with: ' + member.email + ' - ' + e.message);
       }
       
       // Add to team sheet
       const memberId = 'MEM-' + new Date().getTime() + '-' + Math.random().toString(36).substr(2, 9);
       teamSheet.appendRow([memberId, projectId, member.name, member.email]);
-      memberIds.push(memberId);
     });
     
     // Add project to sheet
@@ -192,6 +260,11 @@ function getProjects() {
     const projectsSheet = ss.getSheetByName('Projects');
     const teamSheet = ss.getSheetByName('Team');
     
+    if (!projectsSheet || !teamSheet) {
+      throw new Error('Database sheets not found');
+    }
+    
+    // Check if there are any projects
     if (projectsSheet.getLastRow() < 2) {
       return {
         success: true,
@@ -200,6 +273,7 @@ function getProjects() {
     }
     
     const userEmail = Session.getActiveUser().getEmail();
+    Logger.log('Getting projects for user: ' + userEmail);
     
     // Get all projects where user is a team member
     const teamData = teamSheet.getDataRange().getValues();
@@ -210,6 +284,8 @@ function getProjects() {
         userProjectIds.push(teamData[i][1]);
       }
     }
+    
+    Logger.log('User is in ' + userProjectIds.length + ' projects');
     
     // Get project details
     const projectData = projectsSheet.getDataRange().getValues();
@@ -231,6 +307,8 @@ function getProjects() {
       }
     }
     
+    Logger.log('Returning ' + projects.length + ' projects');
+    
     return {
       success: true,
       projects: projects
@@ -238,6 +316,7 @@ function getProjects() {
     
   } catch (error) {
     Logger.log('Error in getProjects: ' + error.message);
+    Logger.log(error.stack);
     return {
       success: false,
       message: 'Failed to load projects: ' + error.message
@@ -282,21 +361,23 @@ function getProjectDetails(projectId) {
     }
     
     // Get tasks
-    const taskData = tasksSheet.getDataRange().getValues();
     const tasks = [];
-    
-    for (let i = 1; i < taskData.length; i++) {
-      if (taskData[i][1] === projectId) {
-        tasks.push({
-          taskId: taskData[i][0],
-          title: taskData[i][2],
-          description: taskData[i][3],
-          assignedTo: taskData[i][4],
-          priority: taskData[i][5],
-          status: taskData[i][6],
-          dueDate: taskData[i][7] ? new Date(taskData[i][7]).toLocaleDateString() : '',
-          createdDate: new Date(taskData[i][8]).toLocaleDateString()
-        });
+    if (tasksSheet.getLastRow() > 1) {
+      const taskData = tasksSheet.getDataRange().getValues();
+      
+      for (let i = 1; i < taskData.length; i++) {
+        if (taskData[i][1] === projectId) {
+          tasks.push({
+            taskId: taskData[i][0],
+            title: taskData[i][2],
+            description: taskData[i][3],
+            assignedTo: taskData[i][4],
+            priority: taskData[i][5],
+            status: taskData[i][6],
+            dueDate: taskData[i][7] ? new Date(taskData[i][7]).toLocaleDateString() : '',
+            createdDate: new Date(taskData[i][8]).toLocaleDateString()
+          });
+        }
       }
     }
     
@@ -323,6 +404,7 @@ function getProjectDetails(projectId) {
     
   } catch (error) {
     Logger.log('Error in getProjectDetails: ' + error.message);
+    Logger.log(error.stack);
     return {
       success: false,
       message: 'Failed to load project details: ' + error.message
@@ -402,6 +484,7 @@ function createTask(taskData) {
     
   } catch (error) {
     Logger.log('Error in createTask: ' + error.message);
+    Logger.log(error.stack);
     return {
       success: false,
       message: 'Failed to create task: ' + error.message
@@ -474,6 +557,7 @@ function updateTaskStatus(taskId, newStatus) {
     
   } catch (error) {
     Logger.log('Error in updateTaskStatus: ' + error.message);
+    Logger.log(error.stack);
     return {
       success: false,
       message: 'Failed to update task: ' + error.message
@@ -491,6 +575,11 @@ function sendDeadlineReminders() {
     const tasksSheet = ss.getSheetByName('Tasks');
     const teamSheet = ss.getSheetByName('Team');
     const projectsSheet = ss.getSheetByName('Projects');
+    
+    if (tasksSheet.getLastRow() < 2) {
+      Logger.log('No tasks to check');
+      return;
+    }
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -570,6 +659,7 @@ function sendDeadlineReminders() {
     
   } catch (error) {
     Logger.log('Error in sendDeadlineReminders: ' + error.message);
+    Logger.log(error.stack);
   }
 }
 
@@ -579,4 +669,21 @@ function sendDeadlineReminders() {
  */
 function getCurrentUserEmail() {
   return Session.getActiveUser().getEmail();
+}
+
+/**
+ * Test function - creates a demo project
+ * Run this from the script editor to test
+ */
+function testCreateProject() {
+  const result = createProject({
+    projectName: "Test Project - AI Ethics",
+    description: "Research paper on AI ethics for CS401",
+    teamMembers: [
+      { name: "Test User", email: Session.getActiveUser().getEmail() }
+    ]
+  });
+  
+  Logger.log(result);
+  return result;
 }
