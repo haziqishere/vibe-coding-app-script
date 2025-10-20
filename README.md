@@ -110,42 +110,6 @@ git push origin feature/challenge-2-api
 # All challenges
 ./scripts/deploy-all.sh
 ```
-
-## Context Engineering Architecture
-
-This project leverages **solid context engineering** to maintain code consistency and quality as the codebase evolves.
-
-![Context Engineering Diagram](docs/pictures/context-engineering-diagram.png)
-
-### How It Works
-
-1. **GitHub as Central Source of Truth**
-   - All code, conventions, utilities, and metadata live in the repository
-   - Every commit updates the codebase automatically
-
-2. **Claude GitHub Integration**
-   - Claude connects directly to this repository
-   - Reads the entire codebase before generating code
-   - Has access to:
-     - Shared utilities (`shared/utils/`)
-     - Code conventions (`docs/CONVENTIONS.md`)
-     - Challenge metadata (each challenge's structure)
-     - Current CI/CD pipeline configuration
-     - Recent commit history and patterns
-
-3. **Zero-Friction Development**
-   - **No manual context entry needed** - Claude automatically sees all latest changes
-   - **Self-updating context** - As the codebase evolves, Claude's understanding evolves
-   - **Consistent code generation** - Uses existing patterns and utilities
-   - **Convention adherence** - Follows documented standards automatically
-
-### Benefits
-
-- **Maintainability**: Changes to shared utilities or conventions are immediately reflected
-- **Consistency**: All generated code follows the same patterns and uses the same utilities
-- **Efficiency**: No need to copy-paste code into prompts
-- **Scalability**: As the project grows, context grows with it automatically
-
 ## Working with Claude
 
 ### Get code help
